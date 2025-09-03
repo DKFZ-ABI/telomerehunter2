@@ -4,31 +4,53 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.txt)
 [![Build Status](https://img.shields.io/github/workflow/status/fpopp22/telomerehunter2/CI)](https://github.com/fpopp22/telomerehunter2/actions)
 
-TelomereHunter2 is a Python-based tool for estimating telomere content and analyzing telomeric variant repeats (TVRs) from genome sequencing data. It supports BAM/CRAM files, flexible repeat and banding inputs, and provides outputs for bulk and single-cell (scATAC-seq) data.
+TelomereHunter2 is a Python-based tool for estimating telomere content and analyzing telomeric variant repeats (TVRs) from genome sequencing data. It supports BAM/CRAM files, flexible telomere repeat and reference genome inputs, and provides outputs for bulk and single-cell genome sequencing data.
 
 ## Features
 
 - Fast, container-friendly Python 3 implementation
-- Supports BAM/CRAM, custom telomeric repeats, and non-human genomes
-- Interactive HTML reports (Plotly)
+- Parallelization and algorithmic steps for drastic speedup
+- Supports BAM/CRAM, custom telomeric repeats, and now also non-human genomes
+- Static and interactive HTML reports (Plotly)
 - Docker and Apptainer/Singularity containers
-- scATAC-seq support (barcode splitting and per-cell analysis)
+- Single cell sequencing support (e.g. scATAC-seq; barcode splitting and per-cell analysis)
 - Robust input handling and exception management
 
 ## Installation
 
-**Recommended:**  
+**Classic setup (bulk analysis):**  
 ```bash
 pip install telomerehunter2
 ```
 
+**Single-cell setup (sc analysis):**  
+Requires [sinto](https://github.com/timoast/sinto) for barcode splitting:  
+```bash
+pip install 'telomerehunter2[sc]'
+```
+
 **From source:**  
 ```bash
-git clone https://odcf-gitlab.dkfz.de/abi/comparative-cancer-genomics/telomere_hunter_2.git
-cd telomere_hunter_2
+# With pip:
+git clone https://github.com/ferdinand-popp/telomerehunter2.git
+cd telomerehunter2
 python -m venv venv
 source venv/bin/activate
 pip install -e . --no-cache-dir
+
+# For single-cell support:
+pip install -e .[sc] --no-cache-dir
+
+# With poetry:
+git clone https://github.com/ferdinand-popp/telomerehunter2.git
+cd telomerehunter2
+poetry env use python3
+poetry install
+
+# With uv:
+git clone https://github.com/ferdinand-popp/telomerehunter2.git
+cd telomerehunter2
+uv pip install -e . --no-cache-dir
 ```
 
 **Container usage:**  
@@ -55,9 +77,10 @@ telomerehunter2 --help
 - **Custom repeats/species:**  
   `telomerehunter2 ... --repeats TTTAGGG TTAAGGG --repeatsContext TTAAGGG`
 
-### scATAC-seq Analysis
+### Single cell sequencing Analysis
 
-Requires BAM with CB barcode tag and Sinto for splitting:
+Requires BAM with CB barcode tag and Sinto for splitting:  
+Install with `pip install 'telomerehunter2[sc]'`  
 ```bash
 python sc_barcode_splitter_run.py -ibt input.bam -b cytoband.txt -p PatientID -o out/ --keep-bams
 ```
@@ -74,13 +97,13 @@ See `tests/run_sc_atac.py` for examples.
 - `summary.tsv`, `TVR_top_contexts.tsv`, `singletons.tsv`
 - Plots (`plots/` directory, PNG/HTML)
 - Logs (run status/errors)
-- For scATAC: per-cell results in subfolders
+- For sc-seq: per-cell results in subfolders and barcode file with barcodes over read threshold
 
 ## Dependencies
 
-- Python >=3.8
-- pysam, numpy, pandas, plotly
-- Sinto (for scATAC-seq)
+- Python >=3.6
+- pysam, numpy, pandas, plotly, kaleido, PyPDF2
+- Sinto (for sc-seq, install with `[sc]` extra)
 - Docker/Apptainer (optional)
 
 Install all dependencies:  
@@ -104,25 +127,25 @@ apptainer run telomerehunter2_latest.sif telomerehunter2 ...
 
 ## Troubleshooting
 
-- **Memory errors:** Use more RAM or containers.
+- **Memory errors:** Use more RAM or limit cores used with `-c` flag.
 - **Missing dependencies:** Check `requirements.txt`.
-- **CRAM support:** Needs reference FASTA (see pysam docs).
-- **Plotly HTML issues:** Try disabling with `--no_html_report`.
+- **Banding file missing:** Needs reference genome banding file `-b` otherwise analysis will run without reads mapped to subtelomeres.
+- **Plotting:** Try disabling with `--plotNone` or use plotting only mode with `--plotNone`.
 
-For help: [GitHub Issues](https://github.com/fpopp22/telomerehunter2/issues)
+For help: [GitHub Issues](https://github.com/fpopp22/telomerehunter2/issues) or our FAQ.
 
 ## Documentation & Resources
 
 - [Wiki](https://github.com/fpopp22/telomerehunter2/wiki)
 - [Example Data](tests/)
-- [Tutorial Videos](LICENSE.txt)
+- [Tutorial Videos](https://github.com/fpopp22/telomerehunter2/wiki)
 - [Original TelomereHunter Paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-2851-0)
 
 ## Citation
 
 If you use TelomereHunter2, please cite:
-- Sieverling, L., et al. "Genomic footprints of activated telomere maintenance mechanisms in cancer." Nature Communications 11.1 (2020): 733.
-- This repository ([Zenodo DOI](https://zenodo.org/record/XXXXXX) when available)
+- Feuerbach, L., et al. "TelomereHunter – in silico estimation of telomere content and composition from cancer genomes." BMC Bioinformatics 20, 272 (2019). https://doi.org/10.1186/s12859-019-2851-0
+- Application Note for TH2 (in preparation).
 
 ## Contributing
 
@@ -139,7 +162,7 @@ GNU General Public License v3.0. See [LICENSE](LICENSE.txt).
 
 ## Acknowledgements
 
-Developed by Ferdinand Popp, Lina Sieverling, Philip Ginsbach, Lars Feuerbach. Supported by DKFZ Applied Bioinformatics.
+Developed by Ferdinand Popp, Lina Sieverling, Philip Ginsbach, Lars Feuerbach. Supported by German Cancer Research Center (DKFZ) - Division Applied Bioinformatics.
 
 ---
 

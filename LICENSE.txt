@@ -637,7 +637,7 @@ the "copyright" line and a pointer to where the full notice is found.
     For the estimation of telomere content, GC biases are taken into account.
     Finally, the results of Telomerehunter2 are visualized in several diagrams.
 
-    Copyright (C) 2024  Ferdinand Popp, Lina Sieverling, Chen Hong, Lars Feuerbach
+    Copyright (C) 2024  Ferdinand Popp, Lina Sieverling, Philip Ginsbach, Lars Feuerbach
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -657,7 +657,7 @@ Also add information on how to contact you by electronic and paper mail.
   If the program does terminal interaction, make it output a short
 notice like this when it starts in an interactive mode:
 
-    Telomerehunter2  Copyright (C) 2024  Ferdinand Popp, Lina Sieverling, Chen Hong, Lars Feuerbach
+    Telomerehunter2  Copyright (C) 2024  Ferdinand Popp, Lina Sieverling, Philip Ginsbach, Lars Feuerbach
     This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
     This is free software, and you are welcome to redistribute it
     under certain conditions; type `show c' for details.

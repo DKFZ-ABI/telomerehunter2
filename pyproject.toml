@@ -24,6 +24,7 @@ dependencies = [
     "plotly",
     "kaleido"
 ]
+optional-dependencies = { sc = ["sinto"] }
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

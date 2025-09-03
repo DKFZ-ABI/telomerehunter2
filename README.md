@@ -1,56 +1,146 @@
-# TelomereHunter2 (TH2)
+# TelomereHunter2
 
-**⚠️ BETA VERSION - We welcome contributions and feedback!**
+[![PyPI version](https://badge.fury.io/py/telomerehunter2.svg)](https://badge.fury.io/py/telomerehunter2)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE.txt)
+[![Build Status](https://img.shields.io/github/workflow/status/fpopp22/telomerehunter2/CI)](https://github.com/fpopp22/telomerehunter2/actions)
 
-TelomereHunter2 is a complete reimplementation of the established TelomereHunter software, providing a sustainable framework for telomere analysis from whole genome sequencing data.
+TelomereHunter2 is a Python-based tool for estimating telomere content and analyzing telomeric variant repeats (TVRs) from genome sequencing data. It supports BAM/CRAM files, flexible repeat and banding inputs, and provides outputs for bulk and single-cell (scATAC-seq) data.
 
-## About TelomereHunter
+## Features
 
-The original TelomereHunter software has been a key bioinformatics tool for digital diagnosis of telomere maintenance mechanisms (TMM) in precision oncology programs including MASTER and INFORM. It has been validated through comprehensive PCAWG studies and is actively used in clinical practice and neuroblastoma research.
+- Fast, container-friendly Python 3 implementation
+- Supports BAM/CRAM, custom telomeric repeats, and non-human genomes
+- Interactive HTML reports (Plotly)
+- Docker and Apptainer/Singularity containers
+- scATAC-seq support (barcode splitting and per-cell analysis)
+- Robust input handling and exception management
 
-**Original TelomereHunter:**
-- Website: [TelomereHunter Website](https://www.dkfz.de/angewandte-bioinformatik/telomerehunter)
-- Publication: [TelomereHunter Paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-2851-0)
-- Software: pip install telomerehunter
+## Installation
 
-## Key Features of TelomereHunter2
-
-- **🐍 Pure Python3 implementation** - No R or external Samtools dependencies
-- **🚀 Up to 80% runtime improvement** - Parallelized processing and algorithm optimizations
-- **📦 Containerized distribution** - Docker and Apptainer support for diverse IT infrastructures
-- **🔧 Enhanced format support** - CRAM files, hg19/hg38/T2T cytobanding files
-- **🌍 Non-human genome support** - Mouse, dog, and other species analysis
-- **🧬 Single-cell compatibility** - scATAC-seq data analysis capabilities
-
-## Quick Start
-
+**Recommended:**  
 ```bash
-# not implemented yet
-# pip install telomerehunter2
-# git clone https://github.com/ferdinand-popp/telomerehunter2.git
-# apptainer pull docker://fpopp/telomerehunter2:latest
-
-# Run tumor vs control analysis
-telomerehunter2 -p Patient1 -ibt /files/sample01_tumor.cram -ict /files/sample01_control.cram -b cytobanding_hg38.txt
+pip install telomerehunter2
 ```
 
-## Beta Testing
-TelomereHunter2 is currently in beta testing phase. We are actively seeking:
+**From source:**  
+```bash
+git clone https://odcf-gitlab.dkfz.de/abi/comparative-cancer-genomics/telomere_hunter_2.git
+cd telomere_hunter_2
+python -m venv venv
+source venv/bin/activate
+pip install -e . --no-cache-dir
+```
 
-- User feedback and bug reports
-- Feature requests
-- Contributions to code and documentation
-- Validation studies across different datasets
+**Container usage:**  
+See [Container Usage](#container-usage) for Docker/Apptainer instructions.
+
+## Quickstart
+
+```bash
+telomerehunter2 -ibt sample.bam -o results/ -p SampleID -b telomerehunter2/cytoband_files/hg19_cytoBand.txt
+```
+For all options:  
+```bash
+telomerehunter2 --help
+```
+
+## Usage
+
+### Bulk Analysis
+
+- **Single sample:**  
+  `telomerehunter2 -ibt tumor.bam -o out/ -p TumorID -b cytoband.txt`
+- **Tumor vs Control:**  
+  `telomerehunter2 -ibt tumor.bam -ibc control.bam -o out/ -p PairID -b cytoband.txt`
+- **Custom repeats/species:**  
+  `telomerehunter2 ... --repeats TTTAGGG TTAAGGG --repeatsContext TTAAGGG`
+
+### scATAC-seq Analysis
+
+Requires BAM with CB barcode tag and Sinto for splitting:
+```bash
+python sc_barcode_splitter_run.py -ibt input.bam -b cytoband.txt -p PatientID -o out/ --keep-bams
+```
+See `tests/run_sc_atac.py` for examples.
+
+## Input & Output
+
+**Input:**  
+- BAM/CRAM files (aligned reads)
+- Cytoband file (tab-delimited, e.g. `hg19_cytoBand.txt`)
+- Optional: custom telomeric repeats
+
+**Output:**  
+- `summary.tsv`, `TVR_top_contexts.tsv`, `singletons.tsv`
+- Plots (`plots/` directory, PNG/HTML)
+- Logs (run status/errors)
+- For scATAC: per-cell results in subfolders
+
+## Dependencies
+
+- Python >=3.8
+- pysam, numpy, pandas, plotly
+- Sinto (for scATAC-seq)
+- Docker/Apptainer (optional)
+
+Install all dependencies:  
+```bash
+pip install -r requirements.txt
+```
+
+## Container Usage
+
+**Docker:**  
+```bash
+docker pull fpopp22/telomerehunter2
+docker run --rm -it -v /data:/data fpopp22/telomerehunter2 telomerehunter2 -ibt /data/sample.bam -o /data/results -p SampleID -b /data/hg19_cytoBand.txt
+```
+
+**Apptainer/Singularity:**  
+```bash
+apptainer pull docker://fpopp22/telomerehunter2:latest
+apptainer run telomerehunter2_latest.sif telomerehunter2 ...
+```
+
+## Troubleshooting
+
+- **Memory errors:** Use more RAM or containers.
+- **Missing dependencies:** Check `requirements.txt`.
+- **CRAM support:** Needs reference FASTA (see pysam docs).
+- **Plotly HTML issues:** Try disabling with `--no_html_report`.
+
+For help: [GitHub Issues](https://github.com/fpopp22/telomerehunter2/issues)
+
+## Documentation & Resources
+
+- [Wiki](https://github.com/fpopp22/telomerehunter2/wiki)
+- [Example Data](tests/)
+- [Tutorial Videos](LICENSE.txt)
+- [Original TelomereHunter Paper](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-019-2851-0)
+
+## Citation
+
+If you use TelomereHunter2, please cite:
+- Sieverling, L., et al. "Genomic footprints of activated telomere maintenance mechanisms in cancer." Nature Communications 11.1 (2020): 733.
+- This repository ([Zenodo DOI](https://zenodo.org/record/XXXXXX) when available)
 
 ## Contributing
-We welcome contributions from the research community! Please:
 
-- Report issues and bugs
-- Submit feature requests
-- Contribute code improvements
-- Share your use cases and results
+Fork, branch, and submit pull requests. Please add tests and follow code style. For major changes, open an issue first.
 
-## Contact & Support
-For questions, feedback, or contributions, please open an issue on this repository.
+## License
+
+GNU General Public License v3.0. See [LICENSE](LICENSE.txt).
+
+## Contact
+
+- Ferdinand Popp (f.popp@dkfz.de)
+- Lars Feuerbach (l.feuerbach@dkfz.de)
+
+## Acknowledgements
+
+Developed by Ferdinand Popp, Lina Sieverling, Philip Ginsbach, Lars Feuerbach. Supported by DKFZ Applied Bioinformatics.
+
 ---
-TelomereHunter2 addresses the growing challenges of analyzing large genomic datasets while maintaining the reliability needed for precision oncology and research applications.
+
+Copyright 2025 Ferdinand Popp, Lina Sieverling, Philip Ginsbach, Lars Feuerbach

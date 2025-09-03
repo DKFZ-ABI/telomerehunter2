@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telomerehunter2"
+version = "1.0.0"
+description = "An advanced version for TelomereHunter in Python 3 with new features"
+authors = [
+  {name = "FP", email = "f.popp@dkfz.de"},
+  {name = "LF", email = "l.feuerbach@dkfz.de"},
+  {name = "CH"},
+  {name = "LS"}
+]
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+keywords = ["telomere content", "read", "NGS", "WGS", "tumor control"]
+requires-python = ">=3.6"
+dependencies = [
+    "pysam",
+    "pandas",
+    "numpy",
+    "PyPDF2",
+    "plotly",
+    "kaleido"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Bio-Informatics"
+]
+
+[project.urls]
+homepage = "https://www.dkfz.de/en/applied-bioinformatics/telomerehunter/telomerehunter.html"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = ["telomerehunter2"]
+package-data = { "telomerehunter2" = ["README.md", "cytoband_files/*",] }
+
+[project.scripts]
+telomerehunter2 = "telomerehunter2.telomerehunter2_main:main"
+sc-barcode-split-run-telomerehunter2 = "telomerehunter2.sc_barcode_splitter_run:main"
+
+[tool.setuptools_scm]
+write_to = "src/telomerehunter2/_version.py"
+
+[tool.unittest]
+testpaths = ["tests"]
+
+[tool.tox]
+envlist = ["py39", "py310", "py311", "py312", "py313", "lint", "black", "isort"]
+
+[tool.tox.testenv]
+description = "Run unittests for telomerehunter2"
+deps = [
+    "pysam",
+    "pandas",
+    "numpy",
+    "PyPDF2",
+    "plotly",
+    "kaleido",
+    "sinto"
+]
+
+[tool.tox.env_run_base]
+commands = [["python", "-m", "unittest", "discover", "-s", "tests", "-v"]]
+
+
+[testenv.lint]
+description = "Run style checks using flake8"
+deps = ["flake8"]
+commands = ["flake8", "src"]
+
+[testenv.black]
+description = "Format code using black"
+deps = ["black"]
+commands = ["black", "src", "--check"]
+
+[testenv.isort]
+description = "Sort imports using isort"
+deps = ["isort"]
+commands = ["isort", "src", "--check-only"]

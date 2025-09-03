@@ -66,7 +66,6 @@ def run_sample(
             repeats=args.repeats,
             consecutive_flag=args.consecutive,
             remove_duplicates=args.remove_duplicates,
-            fast_mode=args.fast_mode,
             subsample=args.subsample,
             band_file=args.banding_file,
             num_processes=args.cores,
@@ -94,42 +93,28 @@ def run_sample(
     if args.estimate_telomere_content_flag:
         print("------ " + sample_name + ": started estimating telomere content ------")
 
-        if args.fast_mode:
-            estimate_telomere_content.estimate_telomere_content_fast(
-                input_dir=outdir_sample,
-                out_dir=outdir_sample,
-                sample=sample_id,
-                read_length=read_length,
-                repeat_threshold_str=repeat_threshold_str,
-                pid=args.pid,
-                repeat_threshold_set=args.repeat_threshold_set,
-                per_read_length=args.per_read_length,
-            )
-        else:
-            # get gc content distribution of intratelomeric reads
-            estimate_telomere_content.get_gc_content_distribution(
-                bam_file=os.path.join(
-                    outdir_sample, f"{args.pid}_filtered_intratelomeric.bam"
-                ),
-                out_dir=outdir_sample,
-                pid=f"{args.pid}_intratelomeric",
-                sample=sample_id,
-                remove_duplicates=args.remove_duplicates,
-            )
+        estimate_telomere_content.get_gc_content_distribution(
+            bam_file=os.path.join(
+                outdir_sample, f"{args.pid}_filtered_intratelomeric.bam"
+            ),
+            out_dir=outdir_sample,
+            pid=f"{args.pid}_intratelomeric",
+            sample=sample_id,
+            remove_duplicates=args.remove_duplicates,
+        )
 
-            # estimate telomere content
-            estimate_telomere_content.estimate_telomere_content(
-                input_dir=outdir_sample,
-                out_dir=outdir_sample,
-                sample=sample_id,
-                read_length=read_length,
-                repeat_threshold_str=repeat_threshold_str,
-                pid=args.pid,
-                repeat_threshold_set=args.repeat_threshold_set,
-                per_read_length=args.per_read_length,
-                gc_lower=args.gc_lower,
-                gc_upper=args.gc_upper,
-            )
+        estimate_telomere_content.estimate_telomere_content(
+            input_dir=outdir_sample,
+            out_dir=outdir_sample,
+            sample=sample_id,
+            read_length=read_length,
+            repeat_threshold_str=repeat_threshold_str,
+            pid=args.pid,
+            repeat_threshold_set=args.repeat_threshold_set,
+            per_read_length=args.per_read_length,
+            gc_lower=args.gc_lower,
+            gc_upper=args.gc_upper,
+        )
 
     if args.TVR_screen_flag:
         print("------ " + sample_name + ": started TVR screen ------")
@@ -454,16 +439,6 @@ def set_execution_flags(args):
             args.plotSingleton
         ) = False
 
-    if args.fast_mode:
-        args.banding_file = None
-        # TODO For now no TVR context as log2 tel content is used -> should we use the raw counts?
-        args.TVR_context_flag = False
-        args.plotTelContent = False
-        args.plotGC = False
-        args.plotChr = False
-        args.plotFractions = False
-        args.plotSingleton = False
-
 
 def parse_command_line_arguments():
     # Cmd line input.
@@ -622,13 +597,6 @@ def parse_command_line_arguments():
     )
 
     running_group = parser.add_argument_group("Running Options")
-    running_group.add_argument(
-        "--fast_mode",
-        action="store_true",
-        dest="fast_mode",
-        default=False,
-        help="Enable fast mode (default: False)",
-    )
     running_group.add_argument(
         "--subsample",
         dest="subsample",

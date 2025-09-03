@@ -145,7 +145,6 @@ def process_region(args):
         repeat_threshold_calc,
         mapq_threshold,
         remove_duplicates,
-        fast_mode,
         subsample,
         band_info,
         temp_dir,
@@ -159,7 +158,7 @@ def process_region(args):
     gc_content = {}
     read_counts = {"unmapped": {"unmapped": 0}}
     last_position = 0
-    filtered_read_count = 0  # New counter for filtered reads
+    filtered_read_count = 0
 
     # Subsample check
     random_generator = np.random.default_rng() if subsample else None
@@ -175,11 +174,6 @@ def process_region(args):
 
                     is_unmapped = read.is_unmapped
                     mapping_quality = read.mapping_quality
-                    # Skip read modifiers
-                    if fast_mode and not (
-                        is_unmapped or mapping_quality < mapq_threshold
-                    ):
-                        continue
                     if subsample and random_generator.random() >= subsample:
                         continue
                     if (
@@ -198,19 +192,17 @@ def process_region(args):
                     ):  # skip if there is no sequence for read in BAM file
                         continue
 
-                    # Calculate GC content if not in fast mode
-                    if not fast_mode:
-                        n_count = sequence.count("N")
-                        read_length_no_N = read_length - n_count
-                        if read_length_no_N > 0 and (n_count / read_length) <= 0.2:
-                            gc_percent = int(
-                                round(
-                                    (sequence.count("C") + sequence.count("G"))
-                                    / read_length_no_N
-                                    * 100
-                                )
+                    n_count = sequence.count("N")
+                    read_length_no_N = read_length - n_count
+                    if read_length_no_N > 0 and (n_count / read_length) <= 0.2:
+                        gc_percent = int(
+                            round(
+                                (sequence.count("C") + sequence.count("G"))
+                                / read_length_no_N
+                                * 100
                             )
-                            gc_content[gc_percent] = gc_content.get(gc_percent, 0) + 1
+                        )
+                        gc_content[gc_percent] = gc_content.get(gc_percent, 0) + 1
 
                     # Process band information
                     if is_unmapped or mapping_quality < mapq_threshold:
@@ -287,7 +279,6 @@ def process_unmapped_reads(args):
         repeat_threshold_calc,
         mapq_threshold,
         remove_duplicates,
-        fast_mode,
         subsample,
         temp_dir,
         start_position,
@@ -336,19 +327,17 @@ def process_unmapped_reads(args):
 
                     read_length = len(sequence)
 
-                    # Calculate GC content if not in fast mode
-                    if not fast_mode:
-                        n_count = sequence.count("N")
-                        read_length_no_N = read_length - n_count
-                        if read_length_no_N > 0 and (n_count / read_length) <= 0.2:
-                            gc_percent = int(
-                                round(
-                                    (sequence.count("C") + sequence.count("G"))
-                                    / read_length_no_N
-                                    * 100
-                                )
+                    n_count = sequence.count("N")
+                    read_length_no_N = read_length - n_count
+                    if read_length_no_N > 0 and (n_count / read_length) <= 0.2:
+                        gc_percent = int(
+                            round(
+                                (sequence.count("C") + sequence.count("G"))
+                                / read_length_no_N
+                                * 100
                             )
-                            gc_content[gc_percent] = gc_content.get(gc_percent, 0) + 1
+                        )
+                        gc_content[gc_percent] = gc_content.get(gc_percent, 0) + 1
 
                     read_counts["unmapped"]["unmapped"] += 1
 
@@ -388,7 +377,6 @@ def parallel_filter_telomere_reads(
     repeats,
     consecutive_flag,
     remove_duplicates,
-    fast_mode=False,
     subsample=False,
     band_file=None,
     num_processes=None,
@@ -444,7 +432,6 @@ def parallel_filter_telomere_reads(
                     repeat_threshold_calc,
                     mapq_threshold,
                     remove_duplicates,
-                    fast_mode,
                     subsample,
                     band_info,
                     temp_dir,
@@ -477,7 +464,6 @@ def parallel_filter_telomere_reads(
             repeat_threshold_calc,
             mapq_threshold,
             remove_duplicates,
-            fast_mode,
             subsample,
             temp_dir,
             max_position,

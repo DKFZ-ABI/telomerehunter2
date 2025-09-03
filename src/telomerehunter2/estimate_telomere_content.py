@@ -195,68 +195,6 @@ def estimate_telomere_content(
         summary_file.write(results_line)
 
 
-@measure_time
-def estimate_telomere_content_fast(
-    input_dir,
-    out_dir,
-    pid,
-    sample,
-    read_length,
-    repeat_threshold_set,
-    per_read_length,
-    repeat_threshold_str,
-):
-    total_unmapped_read_count = get_total_read_count(input_dir, pid)
-
-    tel_read_count, intratel_read_count = get_telomere_counts(input_dir, pid)
-
-    # estimate telomere content (intratelomeric reads per million reads with similar gc content)
-    if total_unmapped_read_count == 0:
-        raw_tel_content = 0
-    else:
-        raw_tel_content = (
-            float(intratel_read_count) / float(total_unmapped_read_count) * 1000000
-        )
-
-    # take special repeat threshold situations into account
-    if repeat_threshold_str == "n":
-        repeat_threshold_str = "heterogeneous"
-
-    if per_read_length:
-        repeat_threshold_set = str(repeat_threshold_set) + " per 100 bp"
-
-    ##########################
-    ### write summary file ###
-    ##########################
-
-    summary_file_path = os.path.join(out_dir, f"{pid}_{sample}_summary.tsv")
-
-    # Write summary file
-    with open(summary_file_path, "w") as summary_file:
-        # Header
-        header = "\t".join(
-            [
-                "PID",
-                "sample",
-                "total_reads",
-                "read_length",
-                "repeat_threshold_set",
-                "repeat_threshold_used",
-                "tel_reads",
-                "intratel_reads",
-                "raw_tel_content",
-            ]
-        )
-        summary_file.write(header + "\n")
-
-        # Results
-        results_line = (
-            f"{pid}\t{sample}\t{total_unmapped_read_count}\t{read_length}\t{repeat_threshold_set}\t"
-            f"{repeat_threshold_str}\t{tel_read_count}\t{intratel_read_count}\t{raw_tel_content:.6f}\n"
-        )
-        summary_file.write(results_line)
-
-
 def get_telomere_counts(input_dir, pid):
     """
     Grab reads_with_patterns from _spectrum.tsv
